@@ -71,7 +71,7 @@ router.post(
 // UPDATE a task
 router.put("/:id", auth, async (req, res) => {
   try {
-    const task = await Tasks.findById(req.params.id);
+    const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ error: "Task not found" });
     if (task.user.toString() !== req.user._id.toString())
       return res.status(403).json({ error: "Forbidden" });
@@ -108,7 +108,7 @@ router.delete("/:id", auth, async (req, res) => {
     if (task.user.toString() !== req.user._id.toString())
       return res.status(403).json({ error: "Forbidden" });
 
-    await task.remove();
+    await task.deleteOne();
 
     const io = req.app.get("io");
     io.to(req.user._id.toString()).emit("taskDeleted", { id: req.params.id });
