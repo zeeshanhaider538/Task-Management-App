@@ -25,10 +25,15 @@ export const Signup = () => {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "50px auto" }}>
+    <div style={{ margin: "50px auto", color: "white" }}>
       <h2>Signup</h2>
       <Form layout="vertical" onFinish={handleSubmit}>
-        <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+        <Form.Item
+          name="name"
+          label="Name"
+          rules={[{ required: true }]}
+          style={{ color: "white" }}
+        >
           <Input />
         </Form.Item>
         <Form.Item
