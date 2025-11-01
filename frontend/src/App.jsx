@@ -11,7 +11,6 @@ import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { Dashboard } from "./pages/Dashboard";
 import { useContext } from "react";
-
 const queryClient = new QueryClient();
 
 const PrivateRoute = ({ children }) => {
