@@ -8,12 +8,15 @@ import {
   Space,
   Divider,
   Tooltip,
+  Switch,
 } from "antd";
 import {
   PlusOutlined,
   TableOutlined,
   AppstoreOutlined,
   FilterOutlined,
+  MoonOutlined,
+  SunOutlined,
 } from "@ant-design/icons";
 import { TaskTable } from "../components/TaskTable";
 import { TaskKanban } from "../components/TaskKanban";
@@ -31,6 +34,7 @@ export const Dashboard = () => {
   const [editingTask, setEditingTask] = useState(null);
   const [view, setView] = useState("table");
   const [filterStatus, setFilterStatus] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     const socket = connectSocket(user.token);
@@ -60,96 +64,145 @@ export const Dashboard = () => {
     const reordered = Array.from(tasks);
     const [removed] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, removed);
-    const orderedIds = reordered.map((t) => t._id);
-    reorderTasks.mutate(orderedIds);
+    reorderTasks.mutate(reordered.map((t) => t._id));
   };
 
   const filteredTasks = filterStatus
     ? tasks.filter((t) => t.status === filterStatus)
     : tasks;
 
+  const bgColor = darkMode ? "#121212" : "#f5f7fb";
+  const cardColor = darkMode ? "#1f1f1f" : "#fff";
+  const textColor = darkMode ? "#eaeaea" : "#333";
+
   return (
     <div
       style={{
-        padding: "40px 60px",
-        background: "#f5f7fb",
         minHeight: "100vh",
-        transition: "all 0.3s ease",
+        background: bgColor,
+        transition: "all 0.4s ease",
       }}
     >
-      <Card
-        bordered={false}
+      {/* Header */}
+      <div
         style={{
-          borderRadius: 16,
-          boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
-          padding: 24,
-          background: "#fff",
+          background: darkMode
+            ? "linear-gradient(90deg, #434343 0%, #000000 100%)"
+            : "linear-gradient(90deg, #4f46e5 0%, #3b82f6 100%)",
+          color: "#fff",
+          padding: "40px 60px 60px",
+          borderBottomLeftRadius: "60px",
+          borderBottomRightRadius: "60px",
+          boxShadow: "0 6px 20px rgba(0,0,0,0.2)",
+          transition: "all 0.4s ease",
         }}
       >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 20,
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+            gap: 16,
           }}
         >
           <div>
-            <Title level={3} style={{ marginBottom: 0 }}>
-              Welcome, {user?.name || "User"} 👋
+            <Title
+              level={2}
+              style={{ color: "#fff", marginBottom: 4, fontWeight: 700 }}
+            >
+              Dashboard
             </Title>
-            <Text type="secondary">
-              Manage your tasks efficiently with beautiful clarity.
+            <Text style={{ color: "#e0e0e0" }}>
+              Welcome back, <b>{user?.name || "User"}</b> 👋 — stay productive
+              today!
             </Text>
           </div>
-          <Tooltip title="Add New Task">
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              size="large"
-              shape="round"
-              onClick={() => setModalVisible(true)}
-            >
-              Add Task
-            </Button>
-          </Tooltip>
+          <Space>
+            <Tooltip title="Toggle Dark Mode">
+              <Switch
+                checkedChildren={<MoonOutlined />}
+                unCheckedChildren={<SunOutlined />}
+                checked={darkMode}
+                onChange={() => setDarkMode(!darkMode)}
+              />
+            </Tooltip>
+
+            <Tooltip title="Add New Task">
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                size="large"
+                shape="round"
+                style={{
+                  background: "#fff",
+                  color: "#4f46e5",
+                  border: "none",
+                  fontWeight: 600,
+                }}
+                onClick={() => setModalVisible(true)}
+              >
+                Add Task
+              </Button>
+            </Tooltip>
+          </Space>
         </div>
+      </div>
 
-        <Divider style={{ margin: "20px 0" }} />
-
-        <Space
+      {/* Main Content */}
+      <div style={{ padding: "30px 60px", transition: "all 0.3s ease" }}>
+        <Card
+          bordered={false}
           style={{
-            display: "flex",
-            justifyContent: "flex-start",
-            flexWrap: "wrap",
-            gap: "12px",
-            marginBottom: 24,
+            borderRadius: 16,
+            boxShadow: darkMode
+              ? "0 6px 15px rgba(255,255,255,0.05)"
+              : "0 6px 15px rgba(0,0,0,0.08)",
+            padding: 24,
+            background: cardColor,
+            color: textColor,
           }}
         >
-          <Select
-            prefix={<FilterOutlined />}
-            placeholder="Filter by Status"
-            style={{ width: 220 }}
-            onChange={setFilterStatus}
-            allowClear
+          {/* Controls */}
+          <Space
+            style={{
+              display: "flex",
+              justifyContent: "flex-start",
+              flexWrap: "wrap",
+              gap: "16px",
+              marginBottom: 24,
+            }}
           >
-            <Select.Option value="Pending">Pending</Select.Option>
-            <Select.Option value="In Progress">In Progress</Select.Option>
-            <Select.Option value="Completed">Completed</Select.Option>
-          </Select>
+            <Select
+              prefix={<FilterOutlined />}
+              placeholder="Filter by Status"
+              style={{ width: 220 }}
+              onChange={setFilterStatus}
+              allowClear
+              size="large"
+            >
+              <Select.Option value="Pending">Pending</Select.Option>
+              <Select.Option value="In Progress">In Progress</Select.Option>
+              <Select.Option value="Completed">Completed</Select.Option>
+            </Select>
 
-          <Select
-            prefix={view === "table" ? <TableOutlined /> : <AppstoreOutlined />}
-            value={view}
-            style={{ width: 180 }}
-            onChange={setView}
-          >
-            <Select.Option value="table">Table View</Select.Option>
-            <Select.Option value="kanban">Kanban View</Select.Option>
-          </Select>
-        </Space>
+            <Select
+              prefix={
+                view === "table" ? <TableOutlined /> : <AppstoreOutlined />
+              }
+              value={view}
+              style={{ width: 180 }}
+              onChange={setView}
+              size="large"
+            >
+              <Select.Option value="table">Table View</Select.Option>
+              <Select.Option value="kanban">Kanban View</Select.Option>
+            </Select>
+          </Space>
 
-        <div style={{ marginTop: 10 }}>
+          <Divider style={{ margin: "10px 0 20px" }} />
+
+          {/* Main View */}
           {view === "table" ? (
             <TaskTable
               tasks={filteredTasks}
@@ -160,9 +213,10 @@ export const Dashboard = () => {
           ) : (
             <TaskKanban tasks={filteredTasks} onDragEnd={handleDragEnd} />
           )}
-        </div>
-      </Card>
+        </Card>
+      </div>
 
+      {/* Task Modal */}
       <TaskModal
         visible={modalVisible}
         onCancel={() => {
